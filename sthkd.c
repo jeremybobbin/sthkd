@@ -1,41 +1,38 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/select.h>
-#include <termios.h>
-#include <pty.h>
 #include <errno.h>
-#include <string.h>
-#include <signal.h>
-
 #include <fcntl.h>
-
-#define _XOPEN_SOURCE
-
+#include <pty.h>
+#include <signal.h>
+#include <stdio.h>
 #include <stdlib.h>
-
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#include <string.h>
+#include <sys/select.h>
+#include <sys/stat.h>
+#include <termios.h>
+#include <unistd.h>
 
 struct termios orig, term;
 int pty, pid;
 
 void
-restore_term() {
+restore_term()
+{
 	/* restore terminal */
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig);
-	printf("\033[?25h\033[?1049l");
 	fflush(stdout);
 }
 
 
-int die(const char *msg) {
+int
+die(const char *msg)
+{
 	restore_term();
 	fprintf(stderr, "errno: %d\n", errno);
 	fprintf(stderr, "sthkd: error - %s\n", msg);
 	exit(1);
 }
 
-int main(int argc, char **argv) 
+int
+main(int argc, char **argv) 
 {
 	int len; 
 	char buf[BUFSIZ];
@@ -53,19 +50,22 @@ int main(int argc, char **argv)
 		case -1: 
 			die("fork");
 			/* unreachable */
-		case 0: /* child */
+		case 0:  /* child */
 			setenv("STHKD", "true", 1);
 			execlp("/bin/bash", "/bin/bash", NULL);
 			die("exec");
 			/* unreachable */
 	}
 
-	/* setup terminal */
 	term = orig;
+	/* pass raw input directly to slave */
 	cfmakeraw(&term);
 	tcsetattr(STDIN_FILENO, TCSANOW, &term);
-	/* swap buffer */
-	/* printf("\033[?1049h\033[H");  */
+
+	/* give slave TTY original settings */
+	tcsetattr(pty, TCSANOW, &orig);
+	ioctl(pty, TIOCSCTTY, 1);
+
 	fflush(stdout);
 	
 	while (1) {
@@ -86,7 +86,6 @@ int main(int argc, char **argv)
 			}
 			if (write(pty, buf, len) < len)
 				die("\n\nwrite to pty\n\n");
-		
 		}
 
 		if (FD_ISSET(pty, &fds)) {
@@ -95,7 +94,6 @@ int main(int argc, char **argv)
 			}
 			if (write(1, buf, len) < len)
 				die("write stdout");
-		
 		}
 	}
 	restore_term();
