@@ -29,7 +29,7 @@ int
 die(const char *msg)
 {
 	fprintf(stderr, "errno: %d\n", errno);
-	fprintf(stderr, "sthkd: error - %s\n", msg);
+	fprintf(stderr, "itty: error - %s\n", msg);
 	exit(1);
 }
 
@@ -56,7 +56,7 @@ main(int argc, char *argv[])
 			die("fork");
 			/* unreachable */
 		case 0:  /* child */
-			setenv("STHKD", "true", 1);
+			setenv("ITTY", "true", 1);
 			if ((shell = getenv("SHELL")) == NULL)
 				shell = "/bin/sh";
 			execlp(shell, shell, NULL);
@@ -85,7 +85,7 @@ main(int argc, char *argv[])
 			die("fork");
 			/* unreachable */
 		case 0:  /* child */
-			setenv("STHKD", "interpreter", 1);
+			setenv("ITTY", "interpreter", 1);
 			dup2(ipipe[0], 0);
 			dup2(opipe[1], 1);
 			execvp(argv[1], argv+1);
