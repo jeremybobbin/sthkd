@@ -79,7 +79,6 @@ main(int argc, char *argv[])
 	if (pipe(ipipe) == -1 || pipe(opipe) == -1)
 		die("interpreter pipe");
 
-	fprintf(stderr, "ifork\n");
 	switch (ipid = fork()) {
 		case -1:
 			die("fork");
