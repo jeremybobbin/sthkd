@@ -98,6 +98,10 @@ main(int argc, char **argv)
 	kb = head;
 	while (fgets(line, MAX_LINE, cfg) != NULL) {
 		switch (state) {
+		case BINDING:
+			if (line[0] == '\t') {
+				kb->str = strdup(line+1);
+			} else state = KEYS; /* FALLTHROUGH */
 		case KEYS:
 			if (line[0] == '\n') continue;
 			if (kb == NULL) {
@@ -109,7 +113,7 @@ main(int argc, char **argv)
 			}
 			nbindings++;
 			/* set keys minus tailing newline */
-			for (i = 0; (line[i] != '\n' && !line[i+1]); i++) {
+			for (i = 0; !(line[i] == '\n' && line[i+1] == '\0'); i++) {
 				if (i > MAX_KEYS-1)
 					die("key sequence greater than MAX_KEYS");
 				kb->keys[i] = line[i];
@@ -117,14 +121,6 @@ main(int argc, char **argv)
 			if (line[i] != '\n')
 				die("expecting newline");
 			state = BINDING;
-			break;
-		case BINDING:
-			if (line[0] == '\n') {
-				state = KEYS;
-				break;
-			}
-			if (line[0] != '\t')
-				die("expecting tab");
 			break;
 		}
 	}
