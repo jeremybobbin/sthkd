@@ -11,7 +11,8 @@
 #include <unistd.h>
 
 struct termios orig, term;
-int pty, pid;
+/* ipid: interpreter pid */
+int pty, pid, ipid;
 
 void
 restore()
@@ -31,10 +32,10 @@ die(const char *msg)
 }
 
 int
-main(int argc, char **argv) 
+main(int argc, char *argv[])
 {
 	int len; 
-	char buf[BUFSIZ];
+	char buf[BUFSIZ], *shell;
 	struct winsize winsize;
 
 	if (tcgetattr(STDIN_FILENO, &orig) == -1) {
@@ -51,7 +52,9 @@ main(int argc, char **argv)
 			/* unreachable */
 		case 0:  /* child */
 			setenv("STHKD", "true", 1);
-			execlp("/bin/bash", "/bin/bash", NULL);
+			if ((shell = getenv("SHELL")) == NULL)
+				shell = "/bin/sh";
+			execvp(shell, NULL);
 			die("exec");
 			/* unreachable */
 	}
@@ -67,6 +70,19 @@ main(int argc, char **argv)
 	ioctl(pty, TIOCSCTTY, 1);
 
 	fflush(stdout);
+
+	switch (ipid = fork()) {
+		case -1:
+			die("fork");
+			/* unreachable */
+		case 0:  /* child */
+			setenv("STHKD", "interpreter", 1);
+			dup2(0);
+			execvp(argv[1], &argv[2]);
+			die("exec");
+			/* unreachable */
+	}
+
 	
 	while (1) {
 		fd_set fds;
