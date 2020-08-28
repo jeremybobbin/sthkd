@@ -14,7 +14,7 @@ struct termios orig, term;
 int pty, pid;
 
 void
-restore_term()
+restore()
 {
 	/* restore terminal */
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig);
@@ -25,7 +25,6 @@ restore_term()
 int
 die(const char *msg)
 {
-	restore_term();
 	fprintf(stderr, "errno: %d\n", errno);
 	fprintf(stderr, "sthkd: error - %s\n", msg);
 	exit(1);
@@ -60,6 +59,7 @@ main(int argc, char **argv)
 	term = orig;
 	/* pass raw input directly to slave */
 	cfmakeraw(&term);
+	atexit(restore);
 	tcsetattr(STDIN_FILENO, TCSANOW, &term);
 
 	/* give slave TTY original settings */
@@ -96,5 +96,4 @@ main(int argc, char **argv)
 				die("write stdout");
 		}
 	}
-	restore_term();
 }
