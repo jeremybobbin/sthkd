@@ -63,7 +63,7 @@ int
 die(const char *msg)
 {
 	fprintf(stderr, "errno: %d\n", errno);
-	fprintf(stderr, "sthkd: error - %s\n", msg);
+	fprintf(stderr, "binder: error - %s\n", msg);
 	exit(1);
 }
 

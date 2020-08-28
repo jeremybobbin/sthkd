@@ -4,12 +4,12 @@
 
 include config.mk
 
-SRC = itty.c
+SRC = itty.c binder.c
 OBJ = $(SRC:.c=.o)
 DESTDIR=
 PREFIX=/usr/local
 
-all: options itty
+all: options itty binder
 
 options:
 	@echo itty build options:
@@ -25,14 +25,15 @@ config.h:
 	$(CC) $(ALLCFLAGS) -c $<
 
 itty.o: itty.c
+binder.o: binder.c
 
 $(OBJ):
 
-itty: $(OBJ)
-	$(CC) -o $@ $(OBJ) $(ALLLDFLAGS)
+itty: itty.o
+binder: binder.o
 
 clean:
-	rm -f itty $(OBJ) itty-$(VERSION).tar.gz
+	rm -f itty binder $(OBJ) itty-$(VERSION).tar.gz
 
 dist: clean
 	mkdir -p itty-$(VERSION)
