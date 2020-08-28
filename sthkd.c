@@ -92,7 +92,7 @@ main(int argc, char **argv)
 			if ((len = read(pty, buf, sizeof(buf))) < 0) {
 				die("read stdin");
 			}
-			if (write(1, buf, len) < len)
+			if (write(2, buf, len) < len)
 				die("write stdout");
 		}
 	}
