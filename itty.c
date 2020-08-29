@@ -16,6 +16,7 @@ struct termios orig, term;
 struct winsize winsize;
 /* ipid, ipipe, opipe: interpreter {pid,{input,output} pipe} */
 int pty, pid, ipid, ipipe[2], opipe[2], nfds, running;
+char *err;
 
 void
 restore()
@@ -23,6 +24,7 @@ restore()
 	/* restore terminal */
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig);
 	fflush(stdout);
+	if (err) fprintf(stderr, "itty: error(%d) - %s\n", errno, err);
 }
 
 int
@@ -35,15 +37,13 @@ winch(int sig)
 int
 stop(int sig)
 {
-	fprintf(stderr, "stopping\n");
 	running = 0;
 }
 
 int
 die(const char *msg)
 {
-	fprintf(stderr, "errno: %d\n", errno);
-	fprintf(stderr, "itty: error - %s\n", msg);
+	err = msg;
 	exit(1);
 }
 
@@ -81,14 +81,14 @@ main(int argc, char *argv[])
 	term = orig;
 	/* pass raw input directly to slave */
 	cfmakeraw(&term);
-	atexit(restore);
 	tcsetattr(STDIN_FILENO, TCSANOW, &term);
 
 	/* give slave TTY original settings */
 	tcsetattr(pty, TCSANOW, &orig);
-	ioctl(pty, TIOCSCTTY, 1);
 
 	fflush(stdout);
+
+	atexit(restore);
 
 	if (pipe(ipipe) == -1 || pipe(opipe) == -1)
 		die("interpreter pipe");
