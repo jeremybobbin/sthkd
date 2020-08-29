@@ -4,12 +4,12 @@
 
 include config.mk
 
-SRC = itty.c binder.c
+SRC = itty.c bmac.c
 OBJ = $(SRC:.c=.o)
 DESTDIR=
 PREFIX=/usr/local
 
-all: options itty binder
+all: options itty bmac
 
 options:
 	@echo itty build options:
@@ -26,14 +26,15 @@ config.h:
 
 itty.o: itty.c
 binder.o: binder.c
+bmac.o: bmac.c
 
 $(OBJ):
 
 itty: itty.o
-binder: binder.o
+bmac: bmac.o
 
 clean:
-	rm -f itty binder $(OBJ) itty-$(VERSION).tar.gz
+	rm -f itty bmac $(OBJ) itty-$(VERSION).tar.gz
 
 dist: clean
 	mkdir -p itty-$(VERSION)
@@ -41,9 +42,9 @@ dist: clean
 	tar -cf - itty-$(VERSION) | gzip > itty-$(VERSION).tar.gz
 	rm -rf itty-$(VERSION)
 
-install: itty
+install: bmac itty
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
-	cp -f itty $(DESTDIR)$(PREFIX)/bin
+	cp -f bmac itty $(DESTDIR)$(PREFIX)/bin
 	chmod 755 $(DESTDIR)$(PREFIX)/bin/itty
 	mkdir -p $(DESTDIR)$(MANPREFIX)/man1
 	sed "s/VERSION/$(VERSION)/g" < itty.1 > $(DESTDIR)$(MANPREFIX)/man1/itty.1
