@@ -1,5 +1,5 @@
 *.o
 *.ghc
 itty
-binder
+bmac
 cat
