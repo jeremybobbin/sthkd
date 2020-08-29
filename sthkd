@@ -1,4 +1,10 @@
 #!/bin/sh
+
+if [ $# -ne 1 ]; then
+	echo "${0##*/}: requires an argument" 1>&2
+	exit 1
+fi
+
 tmp="$(mktemp -d)"
 mkfifo "$tmp/cmd"
 chmod 700 "$tmp/cmd"
