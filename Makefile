@@ -13,8 +13,8 @@ all: options itty bmac
 
 options:
 	@echo itty build options:
-	@echo "CFLAGS  = $(STCFLAGS)"
-	@echo "LDFLAGS = $(STLDFLAGS)"
+	@echo "CFLAGS  = $(ALL_CFLAGS)"
+	@echo "LDFLAGS = $(ALL_LDFLAGS)"
 	@echo "CC      = $(CC)"
 
 config.h:
@@ -22,16 +22,13 @@ config.h:
 
 .SUFFIX: .o.c
 .c.o:
-	$(CC) $(ALLCFLAGS) -c $<
-
-itty.o: itty.c
-binder.o: binder.c
-bmac.o: bmac.c
-
-$(OBJ):
+	$(CC) $(ALL_CFLAGS) -c $<
 
 itty: itty.o
+	$(CC) -o $@ $^ $(ALL_LDFLAGS)
+
 bmac: bmac.o
+	$(CC) -o $@ $^ $(ALL_LDFLAGS)
 
 clean:
 	rm -f itty bmac $(OBJ) itty-$(VERSION).tar.gz
