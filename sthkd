@@ -1,11 +1,12 @@
 #!/bin/sh
 tmp="$(mktemp -d)"
-mkfifo "$tmp/in" "$tmp/cmd"
+mkfifo "$tmp/cmd"
 chmod 700 "$tmp/cmd"
 
-# config is first and only argument
-config="$1"
+sh "$tmp/cmd" 1>/dev/null 2>&1 &
 
-bmac -q "$config" < "$tmp/in" > cmd &
-sleep 3
-itty sh -c "tee $tmp/in"
+# $1 is our config
+# we're redirecting non-matching input to stdout
+itty bmac -o "$tmp/cmd" -n /dev/stdout "$1"
+
+rm -rf "$tmp"
