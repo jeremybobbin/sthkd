@@ -111,17 +111,31 @@ fmt(char *dst, char *s, int len)
 int
 main(int argc, char **argv) 
 {
-	int len, i, k, klen, offset, state, flags = 0;
+	int len, i, k, klen, offset, state, flags, ofd, nfd;
 	char keys[MAX_KEYS], buf[BUFSIZ], c;
 	KeyBinding *kb;
 	struct winsize winsize;
 	
-	while ((c = getopt(argc, argv, "q")) != -1) {
+	ofd = nfd = -1;
+	flags = 0;
+
+	while ((c = getopt(argc, argv, "qo:n:")) != -1) {
 		switch (c) {
 		case 'q': flags |= QUIET; break;
+		case 'o':
+			if ((ofd = open(optarg, O_RDONLY)) == -1)
+				die("couldn't open out file");
+			break;
+		case 'n':
+			if ((nfd = open(optarg, O_RDONLY)) == -1)
+				die("couldn't open non-matching output file");
+			break;
 		default: die("unrecognized option");
 		}
 	}
+
+	if (ofd == -1) ofd = 1;
+	if (nfd == -1) nfd = 1;
 
 	if (optind == argc) {
 		die("argcount\n");
