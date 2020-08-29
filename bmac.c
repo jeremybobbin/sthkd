@@ -1,13 +1,9 @@
 #include <errno.h>
 #include <fcntl.h>
-#include <pty.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/select.h>
 #include <sys/stat.h>
-#include <termios.h>
 #include <unistd.h>
 
 #define MAX_LINE 2048
@@ -22,12 +18,7 @@ typedef struct {
 
 typedef KeyBinding KeyBinding;
 
-char line[MAX_LINE], *lp;
-int pty, pid;
-FILE *cfg;
-struct termios orig, term;
 KeyBinding *head;
-int nbindings = 0;
 
 /* Assuming you had the Binding, "b", where, when you press x, then y.
  * keybinding("a",  1) would return the binding B
@@ -111,13 +102,13 @@ fmt(char *dst, char *s, int len)
 int
 main(int argc, char **argv) 
 {
-	int len, i, k, klen, offset, state, flags, ofd, nfd;
-	char keys[MAX_KEYS], buf[BUFSIZ], c;
+	int len, i, state, flags, ofd, nfd, keys[MAX_KEYS];
+	char c, line[MAX_LINE];
 	KeyBinding *kb;
-	struct winsize winsize;
+	FILE *cfg;
 	
 	ofd = nfd = -1;
-	flags = 0;
+	flags = i = 0;
 
 	while ((c = getopt(argc, argv, "qo:n:")) != -1) {
 		switch (c) {
@@ -168,7 +159,6 @@ main(int argc, char **argv)
 				kb->next = emalloc(sizeof(KeyBinding));
 				kb = kb->next;
 			}
-			nbindings++;
 			fmt(kb->keys, line, sizeof(kb->keys));
 			state = BINDING;
 			break;
@@ -178,7 +168,7 @@ main(int argc, char **argv)
 	while (read(0, &c, 1) == 1) {
 		if (c <= 0) continue;
 		keys[i++] = c;
-		if ((kb = keybinding(keys, i))) {
+		if ((kb = keybinding(&keys[0], i))) {
 			for (len = MAX_KEYS; len > 1 && !kb->keys[len-1]; len--);
 			if (i == len) {
 				if (write(1, kb->str, kb->len) < kb->len)
