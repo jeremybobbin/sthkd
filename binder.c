@@ -85,8 +85,8 @@ emalloc(int size)
 int
 main(int argc, char **argv) 
 {
-	int len, i, c, k, klen, offset, state, flags = 0;
-	char keys[MAX_KEYS], buf[BUFSIZ];
+	int len, i, k, klen, offset, state, flags = 0;
+	char keys[MAX_KEYS], buf[BUFSIZ], c;
 	KeyBinding *kb;
 	struct winsize winsize;
 	
