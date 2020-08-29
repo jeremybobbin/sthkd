@@ -114,12 +114,12 @@ main(int argc, char **argv)
 		switch (c) {
 		case 'q': flags |= QUIET; break;
 		case 'o':
-			if ((ofd = open(optarg, O_RDONLY)) == -1)
-				die("couldn't open out file");
+			if ((ofd = open(optarg, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR) ) == -1)
+				die(optarg);
 			break;
 		case 'n':
-			if ((nfd = open(optarg, O_RDONLY)) == -1)
-				die("couldn't open non-matching output file");
+			if ((nfd = open(optarg, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR)) == -1)
+				die(optarg);
 			break;
 		default: die("unrecognized option");
 		}
@@ -171,7 +171,7 @@ main(int argc, char **argv)
 		if ((kb = keybinding(&keys[0], i))) {
 			for (len = MAX_KEYS; len > 1 && !kb->keys[len-1]; len--);
 			if (i == len) {
-				if (write(1, kb->str, kb->len) < kb->len)
+				if (write(ofd, kb->str, kb->len) < kb->len)
 					die("couldn't write");
 				i = 0;
 				memset(keys, 0, sizeof(keys));
@@ -180,7 +180,7 @@ main(int argc, char **argv)
 			i = 0;
 			memset(keys, 0, sizeof(keys));
 			/* write keystrokes that don't match any bindings */
-			if (!(flags & QUIET) && write(1, &c, 1) != 1)
+			if (!(flags & QUIET) && write(nfd, &c, 1) != 1)
 				die("couldn't write");
 		}
 	}
