@@ -13,8 +13,9 @@
 #define MAX(a,b) (a) > (b) ? (a) : (b)
 
 struct termios orig, term;
+struct winsize winsize;
 /* ipid, ipipe, opipe: interpreter {pid,{input,output} pipe} */
-int pty, pid, ipid, ipipe[2], opipe[2], nfds;
+int pty, pid, ipid, ipipe[2], opipe[2], nfds, running;
 
 void
 restore()
@@ -24,6 +25,23 @@ restore()
 	fflush(stdout);
 }
 
+int
+winch(int sig)
+{
+	if (ioctl(STDIN_FILENO, TIOCGWINSZ, &winsize)) {
+		die("ioctl");
+	}
+	if (ioctl(pty, TIOCSWINSZ, &winsize)) {
+		die("ioctl");
+	}
+}
+
+int
+stop(int sig)
+{
+	fprintf(stderr, "stopping\n");
+	running = 0;
+}
 
 int
 die(const char *msg)
@@ -38,7 +56,7 @@ main(int argc, char *argv[])
 {
 	int len; 
 	char buf[BUFSIZ], *shell;
-	struct winsize winsize;
+	struct sigaction sa;
 	
 	if (argc < 2)
 		die("set args");
@@ -92,10 +110,21 @@ main(int argc, char *argv[])
 			/* unreachable */
 	}
 
-	
+	sa.sa_flags = 0;
+	sa.sa_sigaction = NULL;
+
+	sigemptyset(&sa.sa_mask);
+	sa.sa_handler = winch;
+	sigaction(SIGWINCH, &sa, NULL);
+	sa.sa_handler = stop;
+	sigaction(SIGCHLD, &sa, NULL);
+	sa.sa_handler = stop;
+	sigaction(SIGTERM, &sa, NULL);
 
 	nfds = MAX(pty, opipe[0]) + 1;
-	while (1) {
+	running = 1;
+
+	while (running) {
 		fd_set fds;
 		FD_ZERO(&fds);
 		FD_SET(STDIN_FILENO, &fds);
