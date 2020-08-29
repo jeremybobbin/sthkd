@@ -16,6 +16,7 @@
 typedef struct {
 	char keys[MAX_KEYS];
 	char *str;
+	int len;
 	struct KeyBinding *next;
 } KeyBinding;
 typedef KeyBinding KeyBinding;
@@ -101,6 +102,9 @@ main(int argc, char **argv)
 		case BINDING:
 			if (line[0] == '\t') {
 				kb->str = strdup(line+1);
+				/* remove newline */
+				kb->len = strlen(kb->str)-1;
+				kb->str[kb->len] = '\0';
 			} else state = KEYS; /* FALLTHROUGH */
 		case KEYS:
 			if (line[0] == '\n') continue;
@@ -131,13 +135,16 @@ main(int argc, char **argv)
 		if ((kb = keybinding(keys, i))) {
 			for (len = MAX_KEYS; len > 1 && !kb->keys[len-1]; len--);
 			if (i == len) {
-				printf(kb->str);
+				if (write(1, kb->str, kb->len) < kb->len)
+					die("couldn't write");
 				i = 0;
 				memset(keys, 0, sizeof(keys));
 			}
 		} else {
 			i = 0;
 			memset(keys, 0, sizeof(keys));
+			if (write(1, &c, 1) != 1)
+				die("couldn't write");
 		}
 	}
 }
