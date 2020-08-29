@@ -1,0 +1,11 @@
+#!/bin/sh
+tmp="$(mktemp -d)"
+mkfifo "$tmp/in" "$tmp/cmd"
+chmod 700 "$tmp/cmd"
+
+# config is first and only argument
+config="$1"
+
+bmac -q "$config" < "$tmp/in" > cmd &
+sleep 3
+itty sh -c "tee $tmp/in"

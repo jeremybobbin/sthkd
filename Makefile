@@ -44,7 +44,7 @@ dist: clean
 
 install: bmac itty
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
-	cp -f bmac itty $(DESTDIR)$(PREFIX)/bin
+	cp -f bmac itty sthkd $(DESTDIR)$(PREFIX)/bin
 	chmod 755 $(DESTDIR)$(PREFIX)/bin/itty
 	mkdir -p $(DESTDIR)$(MANPREFIX)/man1
 	sed "s/VERSION/$(VERSION)/g" < itty.1 > $(DESTDIR)$(MANPREFIX)/man1/itty.1
