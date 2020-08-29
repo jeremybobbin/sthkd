@@ -80,19 +80,30 @@ emalloc(int size)
 #define KEYS    0
 #define BINDING 1
 
+#define QUIET   1
+
 int
 main(int argc, char **argv) 
 {
-	int len, i, c, k, klen, offset, state; 
+	int len, i, c, k, klen, offset, state, flags = 0;
 	char keys[MAX_KEYS], buf[BUFSIZ];
 	KeyBinding *kb;
 	struct winsize winsize;
 	
-	if (argc < 2) {
-		die("argcount\n");
+	while ((c = getopt(argc, argv, "q")) != -1) {
+		switch (c) {
+		case 'q': flags |= QUIET; break;
+		default: die("unrecognized option");
+		}
 	}
 
-	if ((cfg = fopen(argv[1], "r")) == NULL)
+	if (optind == argc) {
+		die("argcount\n");
+	}
+	argc -= optind;
+	argv += optind;
+
+	if ((cfg = fopen(*argv, "r")) == NULL)
 		die("config open");
 
 	state = KEYS;
@@ -143,7 +154,8 @@ main(int argc, char **argv)
 		} else {
 			i = 0;
 			memset(keys, 0, sizeof(keys));
-			if (write(1, &c, 1) != 1)
+			/* write keystrokes that don't match any bindings */
+			if (!(flags & QUIET) && write(1, &c, 1) != 1)
 				die("couldn't write");
 		}
 	}
