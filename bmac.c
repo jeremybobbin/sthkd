@@ -66,28 +66,31 @@ emalloc(int size)
 int
 fmt(char *dst, char *s, int len)
 {
-	int i, mod = 0;
-	for (i = 0; *s && *s != '\n'; s++) {
+	int i, mod;
+	char c;
+
+	i = mod = 0;
+	while ((c = *s++) && c != '\n'){
 		if (mod & ESC) {
 			mod &= ~ESC;
-			switch (*s) {
-			case 'b': *s = '\b'; break;
-			case 'n': *s = '\n'; break;
-			case 'r': *s = '\r'; break;
-			case 't': *s = '\t'; break;
+			switch (c) {
+			case 'b': c = '\b'; break;
+			case 'n': c = '\n'; break;
+			case 'r': c = '\r'; break;
+			case 't': c = '\t'; break;
 			}
-		} else switch (*s) {
+		} else switch (c) {
 			case '\\': mod |= ESC; continue;
 			case '^':  mod |= CTRL; continue;
 		}
-
 		if (mod & CTRL) {
 			/* chop off the first 3 bits */
-			*s &= 0x1f;
+			c &= 0x1f;
 			mod &= ~CTRL;
 		}
-		if (i >= len) die("overflow");
-		dst[i++] = *s;
+		if (i >= len)
+			die("overflow");
+		dst[i++] = c;
 	}
 	return i;
 }
@@ -143,10 +146,11 @@ main(int argc, char **argv)
 		switch (state) {
 		case BINDING:
 			if (line[0] == '\t') {
-				kb->str = strdup(line+1);
+				kb->len = strlen(line+1);
+				kb->str = emalloc(kb->len);
 				/* remove newline */
-				kb->len = strlen(kb->str)-1;
-				kb->str[kb->len] = '\0';
+				fmt(kb->str, line+1, kb->len);
+				/* kb->str[kb->len] = '\0'; */
 				break;
 			} else state = KEYS; /* FALLTHROUGH */
 		case KEYS:
