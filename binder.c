@@ -77,10 +77,51 @@ emalloc(int size)
 	return p;
 }
 
+#define ESC     1
+#define CTRL    2
+/* takes src, like "a^b",
+ * copies into dst as { 'a', CTRL('b'), 0 }
+ */
+int
+fmt(char *dst, char *src, int len)
+{
+	int mod, i, j;
+	char c;
+
+	mod = 0;
+	/* set keys minus tailing newline */
+	for (i = 0, j = 0; src[i] && src[i] != '\n'; src[i++]) {
+		c = src[i];
+		if (mod & ESC) {
+			mod &= ~ESC;
+			switch (c) {
+			case 'b': c = '\b'; break;
+			case 'n': c = '\n'; break;
+			case 'r': c = '\r'; break;
+			case 't': c = '\t'; break;
+			}
+		} else switch (c) {
+			case '\\': mod |= ESC; continue;
+			case '^':  mod |= CTRL; continue;
+		}
+
+		if (mod & CTRL) {
+			/* chop off the first 3 bits */
+			c &= 0x1f;
+			mod &= ~CTRL;
+		}
+		if (j >= len) die("overflow");
+		dst[j++] = c;
+	}
+	if (src[i] != '\n') die("expecting newline");
+}
+
 #define KEYS    0
 #define BINDING 1
 
 #define QUIET   1
+
+
 
 int
 main(int argc, char **argv) 
@@ -116,6 +157,7 @@ main(int argc, char **argv)
 				/* remove newline */
 				kb->len = strlen(kb->str)-1;
 				kb->str[kb->len] = '\0';
+				break;
 			} else state = KEYS; /* FALLTHROUGH */
 		case KEYS:
 			if (line[0] == '\n') continue;
@@ -127,14 +169,7 @@ main(int argc, char **argv)
 				kb = kb->next;
 			}
 			nbindings++;
-			/* set keys minus tailing newline */
-			for (i = 0; !(line[i] == '\n' && line[i+1] == '\0'); i++) {
-				if (i > MAX_KEYS-1)
-					die("key sequence greater than MAX_KEYS");
-				kb->keys[i] = line[i];
-			}
-			if (line[i] != '\n')
-				die("expecting newline");
+			fmt(kb->keys, line, sizeof(kb->keys));
 			state = BINDING;
 			break;
 		}
