@@ -28,12 +28,8 @@ restore()
 int
 winch(int sig)
 {
-	if (ioctl(STDIN_FILENO, TIOCGWINSZ, &winsize)) {
-		die("ioctl");
-	}
-	if (ioctl(pty, TIOCSWINSZ, &winsize)) {
-		die("ioctl");
-	}
+	if (ioctl(STDIN_FILENO, TIOCGWINSZ, &winsize) == -1 ||
+		ioctl(pty, TIOCSWINSZ, &winsize) == -1) die("ioctl");
 }
 
 int
