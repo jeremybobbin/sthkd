@@ -1,0 +1,25 @@
+#!/bin/sh
+tmp="$(mktemp -d)"
+mkfifo "$tmp/normal" "$tmp/insert" "$tmp/cmd" "$tmp/in" "$tmp/out"
+chmod 700 "$tmp/cmd"
+
+bmac -o "$tmp/cmd" -n "$tmp/out" insert < "$tmp/insert" & insert=$!
+bmac -o "$tmp/cmd" -n "$tmp/out" normal < "$tmp/normal" & normal=$!
+
+# keep pipes from sending bmac an EOF
+exec 3> "$tmp/insert" 4> "$tmp/normal"
+
+mode=normal
+cat "$tmp/in" > "$tmp/$mode" & cat=$!
+
+while read -r line; do
+	case "$line" in
+		normal|insert) mode="$line"; kill $cat;
+			cat "$tmp/in" > "$tmp/$mode" & cat=$!;;
+		*) echo "$line";;
+	esac
+done < "$tmp/cmd" > "${DVTM_CMD_FIFO?'requires DVTM command fifo'}" & loop=$!
+
+itty sh -c "cat $tmp/out & cat > $tmp/in"
+kill $cat $insert $normal $loop
+rm -rf "$tmp"

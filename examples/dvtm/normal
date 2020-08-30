@@ -1,0 +1,56 @@
+i
+	insert\n
+j
+	focusnext\n
+k
+	focusprev\n
+h
+	setmfact +0.05\n
+l
+	setmfact -0.05\n
+c
+	create\n
+e
+	edit\n
+E
+	page\n
+1
+	view 1\n
+2
+	view 2\n
+3
+	view 3\n
+4
+	view 4\n
+5
+	view 5\n
+6
+	view 6\n
+7
+	view 7\n
+8
+	view 8\n
+9
+	view 9\n
+0
+	view\n
+!
+	tag 1\n
+@
+	tag 2\n
+\#
+	tag 3\n
+$
+	tag 4\n
+%
+	tag 5\n
+^
+	tag 6\n
+&
+	tag 7\n
+*
+	tag 8\n
+(
+	tag 9\n
+)
+	tag\n
