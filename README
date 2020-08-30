@@ -1,0 +1,26 @@
+sthkd - simple terminal hotkey daemon
+-------------------------------------
+	- bmac: the byte macro processor
+	- itty: the TTY interpreter
+
+
+Examples
+--------
+
+Record terminal input to keys.log:
+
+	itty tee key.log
+
+Control+P to open dmenu(1):
+
+	(cat > config) <<- EOF
+	^P
+		dmenu_run 2>/dev/null 1>&2 \n
+	EOF
+
+	pipe=$(mktemp -u)
+	mkfifo $pipe
+	sh $pipe & $!=sh
+
+	# `-o` option to bmac sends matching keystrokes to $pipe
+	itty bmac -o $pipe config
