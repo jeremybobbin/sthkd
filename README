@@ -24,3 +24,12 @@ Control+P to open dmenu(1):
 
 	# `-o` option to bmac sends matching keystrokes to $pipe
 	itty bmac -o $pipe config
+
+Or the sthkd equivalent:
+
+	(cat > config) <<- EOF
+	^P
+		dmenu_run 2>/dev/null 1>&2 \n
+	EOF
+
+	sthkd config
