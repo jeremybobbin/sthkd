@@ -143,6 +143,7 @@ main(int argc, char **argv)
 	state = KEYS;
 	kb = head;
 	while (fgets(line, sizeof(line), cfg) != NULL) {
+		if (line[0] == '#') continue;
 		switch (state) {
 		case BINDING:
 			if (line[0] == '\t') {
