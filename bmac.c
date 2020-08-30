@@ -142,7 +142,7 @@ main(int argc, char **argv)
 
 	if (stat(*argv, &st) == -1)
 		die("stat");
-	if (st.st_mode & ~(S_IFREG|S_IFLNK|S_IFIFO))
+	if (!(st.st_mode & S_IFREG|S_IFLNK|S_IFIFO))
 		die("not a regular file");
 	if ((cfg = fopen(*argv, "r")) == NULL)
 		die("config open");
