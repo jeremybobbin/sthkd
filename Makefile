@@ -35,9 +35,9 @@ clean:
 
 dist: clean
 	mkdir -p itty-$(VERSION)
-	cp -R Makefile config.mk itty.c $(SRC) itty-$(VERSION)
-	tar -cf - itty-$(VERSION) | gzip > itty-$(VERSION).tar.gz
-	rm -rf itty-$(VERSION)
+	cp -R Makefile config.mk $(SRC) itty-$(VERSION)
+	tar -cf - sthkd-$(VERSION) | gzip > sthkd-$(VERSION).tar.gz
+	rm -rf sthkd-$(VERSION)
 
 install: bmac itty
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
@@ -45,10 +45,14 @@ install: bmac itty
 	chmod 755 $(DESTDIR)$(PREFIX)/bin/itty
 	mkdir -p $(DESTDIR)$(MANPREFIX)/man1
 	sed "s/VERSION/$(VERSION)/g" < itty.1 > $(DESTDIR)$(MANPREFIX)/man1/itty.1
-	chmod 644 $(DESTDIR)$(MANPREFIX)/man1/itty.1
+	sed "s/VERSION/$(VERSION)/g" < bmac.1 > $(DESTDIR)$(MANPREFIX)/man1/bmac.1
+	chmod 644 $(DESTDIR)$(MANPREFIX)/man1/itty.1 $(DESTDIR)$(MANPREFIX)/man1/bmac.1
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/itty
+	rm -f $(DESTDIR)$(PREFIX)/bin/bmac
+	rm -f $(DESTDIR)$(PREFIX)/bin/sthkd
 	rm -f $(DESTDIR)$(MANPREFIX)/man1/itty.1
+	rm -f $(DESTDIR)$(MANPREFIX)/man1/bmac.1
 
 .PHONY: all options clean dist install uninstall

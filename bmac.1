@@ -1,0 +1,30 @@
+.TH BMAC 1 bmac\-VERSION
+.SH NAME
+bmac \- byte macro processor
+.SH SYNOPSIS
+.B bmac
+.RB [ \-o
+.IR matches ]
+.RB [ \-n
+.IR non-matches ]
+.IR config
+.SH DESCRIPTION
+.B bmac
+reads bindings in
+.IR "config"
+- translates multi-byte macros from stdin - writes the translations to
+.IR matches
+.
+.SH OPTIONS
+.TP
+.BI \-o " matches"
+path to where matches are written
+.TP
+.BI \-n " non-matches"
+path to where non-matches are written
+.SH AUTHORS
+Written by Jeremy Bobbin <jer at jer dot cx>
+.SH SEE ALSO
+.BR sed (1),
+.BR m4 (1),
+.BR itty (1)

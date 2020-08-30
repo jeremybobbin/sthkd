@@ -1,0 +1,41 @@
+.TH ITTY 1 itty\-VERSION
+.SH NAME
+itty \- interpreter TTY
+.SH SYNOPSIS
+.B itty
+.RI [ command [args...]]
+.SH DESCRIPTION
+.B itty
+allows
+.IR "command"
+to act as a 
+.B filter
+between the input on the TTY the
+.B SHELL 
+that's spawned.
+.SH ENVIRONMENT VARIABLES
+.B SHELL
+.RS 8
+Determines that's spawned in the slave PTY
+.RE
+.SH EXAMPLES
+Write all of your keystrokes to a file:
+.RS 8
+itty tee keystrokes
+.RE
+
+.PP
+Compose with 
+.BR bmac (1)
+for terminal macros:
+.RS 8
+itty bmac -n /dev/stdout
+.RE
+
+.SH AUTHORS
+Jeremy Bobbin <jer at jer.cx>
+.SH LICENSE
+See the LICENSE file for the terms of redistribution.
+.SH SEE ALSO
+.BR bmac (1),
+.BR forkpty (3),
