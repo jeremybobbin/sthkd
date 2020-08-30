@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/fcntl.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #define MAX_LINE 2048
@@ -109,6 +111,7 @@ main(int argc, char **argv)
 	char c, line[MAX_LINE];
 	KeyBinding *kb;
 	FILE *cfg;
+	struct stat st;
 	
 	ofd = nfd = -1;
 	flags = i = 0;
@@ -137,6 +140,10 @@ main(int argc, char **argv)
 	argc -= optind;
 	argv += optind;
 
+	if (stat(*argv, &st) == -1)
+		die("stat");
+	if (st.st_mode & ~(S_IFREG|S_IFLNK|S_IFIFO))
+		die("not a regular file");
 	if ((cfg = fopen(*argv, "r")) == NULL)
 		die("config open");
 
