@@ -65,12 +65,14 @@ main(int argc, char *argv[])
 		die("ioctl");
 	}
 
+	snprintf(buf, sizeof(buf), "%d", getpid());
+	setenv("ITTY", buf, 1);
+
 	switch (pid = forkpty(&pty, NULL, &term, &winsize)) {
 		case -1: 
 			die("fork");
 			/* unreachable */
 		case 0:  /* child */
-			setenv("ITTY", "true", 1);
 			if ((shell = getenv("SHELL")) == NULL)
 				shell = "/bin/sh";
 			execlp(shell, shell, NULL);
@@ -98,7 +100,6 @@ main(int argc, char *argv[])
 			die("fork");
 			/* unreachable */
 		case 0:  /* child */
-			setenv("ITTY", "interpreter", 1);
 			dup2(ipipe[0], 0);
 			dup2(opipe[1], 1);
 			execvp(argv[1], argv+1);
