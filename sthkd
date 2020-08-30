@@ -9,7 +9,9 @@ tmp="$(mktemp -d)"
 mkfifo "$tmp/cmd"
 chmod 700 "$tmp/cmd"
 
-sh "$tmp/cmd" 1>/dev/null 2>&1 &
+# since itty prints to stderr, we'll just send this to stdout and let
+# the end user handle the rest
+cat "$tmp/cmd" &
 
 # $1 is our config
 # we're redirecting non-matching input to stdout
