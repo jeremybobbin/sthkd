@@ -154,10 +154,10 @@ main(int argc, char **argv)
 		switch (state) {
 		case BINDING:
 			if (line[0] == '\t') {
-				kb->len = strlen(line+1);
-				kb->str = emalloc(kb->len);
+				kb->str = emalloc(kb->len = strlen(line+1));
 				/* remove newline */
 				fmt(kb->str, line+1, kb->len);
+				kb->len = strlen(kb->str);
 				/* kb->str[kb->len] = '\0'; */
 				break;
 			} else state = KEYS; /* FALLTHROUGH */
