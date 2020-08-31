@@ -139,16 +139,16 @@ main(int argc, char *argv[])
 			if ((len = read(0, buf, sizeof(buf))) < 0)
 				die("read stdin");
 			if (write(ipipe[1], buf, len) < len)
-				die("\n\nwrite to pty\n\n");
+				die("write interpreter");
 
 		}
 
 		/* copy interpreter output to pty */
 		if (FD_ISSET(opipe[0], &fds)) {
 			if ((len = read(opipe[0], buf, sizeof(buf))) < 0)
-				die("read stdin");
+				die("read interpreter");
 			if (write(pty, buf, len) < len)
-				die("\n\nwrite to pty\n\n");
+				die("write to pty");
 		}
 
 		/* copy pty to stderr */
