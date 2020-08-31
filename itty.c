@@ -136,9 +136,8 @@ main(int argc, char *argv[])
 
 		/* copy stdin to interpreter input */
 		if (FD_ISSET(STDIN_FILENO, &fds)) {
-			if ((len = read(0, buf, sizeof(buf))) < 0) {
+			if ((len = read(0, buf, sizeof(buf))) < 0)
 				die("read stdin");
-			}
 			if (write(ipipe[1], buf, len) < len)
 				die("\n\nwrite to pty\n\n");
 
@@ -146,18 +145,16 @@ main(int argc, char *argv[])
 
 		/* copy interpreter output to pty */
 		if (FD_ISSET(opipe[0], &fds)) {
-			if ((len = read(opipe[0], buf, sizeof(buf))) < 0) {
+			if ((len = read(opipe[0], buf, sizeof(buf))) < 0)
 				die("read stdin");
-			}
 			if (write(pty, buf, len) < len)
 				die("\n\nwrite to pty\n\n");
 		}
 
 		/* copy pty to stderr */
 		if (FD_ISSET(pty, &fds)) {
-			if ((len = read(pty, buf, sizeof(buf))) < 0) {
+			if ((len = read(pty, buf, sizeof(buf))) < 0)
 				die("read stdin");
-			}
 			if (write(2, buf, len) < len)
 				die("write stdout");
 		}
