@@ -134,6 +134,7 @@ main(int argc, char *argv[])
 			die("select");
 		}
 
+		/* copy stdin to interpreter input */
 		if (FD_ISSET(STDIN_FILENO, &fds)) {
 			if ((len = read(0, buf, sizeof(buf))) < 0) {
 				die("read stdin");
@@ -143,6 +144,7 @@ main(int argc, char *argv[])
 
 		}
 
+		/* copy interpreter output to pty */
 		if (FD_ISSET(opipe[0], &fds)) {
 			if ((len = read(opipe[0], buf, sizeof(buf))) < 0) {
 				die("read stdin");
@@ -151,6 +153,7 @@ main(int argc, char *argv[])
 				die("\n\nwrite to pty\n\n");
 		}
 
+		/* copy pty to stderr */
 		if (FD_ISSET(pty, &fds)) {
 			if ((len = read(pty, buf, sizeof(buf))) < 0) {
 				die("read stdin");
