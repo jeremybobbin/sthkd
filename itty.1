@@ -3,6 +3,8 @@
 itty \- interpreter TTY
 .SH SYNOPSIS
 .B itty
+.RB [ \-p
+.IR program ]
 .RI [ command [args...]]
 .SH DESCRIPTION
 .B itty
@@ -10,9 +12,14 @@ allows
 .IR "command"
 to act as a 
 .B filter
-between the input on the TTY the
-.B SHELL 
+between the input on the TTY and the
+.IR "program"
 that's spawned.
+.SH OPTIONS
+.TP
+.BI \-p " program"
+program that's run on the TTY - defaults to
+.B SHELL
 .SH ENVIRONMENT VARIABLES
 .B SHELL
 .RS 8

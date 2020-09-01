@@ -51,11 +51,23 @@ int
 main(int argc, char *argv[])
 {
 	int len; 
-	char buf[BUFSIZ], *shell;
+	char buf[BUFSIZ], *prg = NULL, c;
 	struct sigaction sa;
-	
-	if (argc < 2)
-		die("set args");
+
+	while ((c = getopt(argc, argv, "qo:n:")) != -1) {
+		switch (c) {
+		case 'p': prg = optarg;
+			break;
+		default: die("unrecognized option");
+		}
+	}
+
+	argc -= optind;
+	argv += optind;
+
+	if (argc < 1) {
+		die("set args\n");
+	}
 
 	if (tcgetattr(STDIN_FILENO, &orig) == -1) {
 		die("tcgetattr");
@@ -73,9 +85,9 @@ main(int argc, char *argv[])
 			die("fork");
 			/* unreachable */
 		case 0:  /* child */
-			if ((shell = getenv("SHELL")) == NULL)
-				shell = "/bin/sh";
-			execlp(shell, shell, NULL);
+			if (prg == NULL && (prg = getenv("SHELL")) == NULL)
+				prg = "/bin/sh";
+			execlp(prg, prg, NULL);
 			die("exec");
 			/* unreachable */
 	}
@@ -102,7 +114,7 @@ main(int argc, char *argv[])
 		case 0:  /* child */
 			dup2(ipipe[0], 0);
 			dup2(opipe[1], 1);
-			execvp(argv[1], argv+1);
+			execvp(*argv, argv);
 			die("exec");
 			/* unreachable */
 	}
