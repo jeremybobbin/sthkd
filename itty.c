@@ -12,6 +12,10 @@
 
 #define MAX(a,b) (a) > (b) ? (a) : (b)
 
+/* assumes buf & len are defined */
+#define COPY(dst, src) (((len = read((src), buf, sizeof(buf))) > 0 && \
+	write(dst, buf, len) == len) ? len : -1)
+
 struct termios orig, term;
 struct winsize winsize;
 /* ipid, ipipe, opipe: interpreter {pid,{input,output} pipe} */
@@ -147,28 +151,18 @@ main(int argc, char *argv[])
 		}
 
 		/* copy stdin to interpreter input */
-		if (FD_ISSET(STDIN_FILENO, &fds)) {
-			if ((len = read(0, buf, sizeof(buf))) < 0)
-				die("read stdin");
-			if (write(ipipe[1], buf, len) < len)
-				die("write interpreter");
-
-		}
+		if (FD_ISSET(STDIN_FILENO, &fds))
+			if (COPY(ipipe[1], STDIN_FILENO) == -1)
+				die("copy stdin to interpreter input");
 
 		/* copy interpreter output to pty */
-		if (FD_ISSET(opipe[0], &fds)) {
-			if ((len = read(opipe[0], buf, sizeof(buf))) < 0)
-				die("read interpreter");
-			if (write(pty, buf, len) < len)
-				die("write to pty");
-		}
+		if (FD_ISSET(opipe[0], &fds))
+			if (COPY(pty, opipe[0]) == -1)
+				die("copy interpreter output to pty");
 
 		/* copy pty to stderr */
-		if (FD_ISSET(pty, &fds)) {
-			if ((len = read(pty, buf, sizeof(buf))) < 0)
-				die("read stdin");
-			if (write(2, buf, len) < len)
-				die("write stdout");
-		}
+		if (FD_ISSET(pty, &fds))
+			if (COPY(STDERR_FILENO, pty) == -1)
+				die("copy pty to stderr");
 	}
 }
