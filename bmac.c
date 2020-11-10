@@ -11,14 +11,13 @@
 #define MAX_LINE 2048
 #define MAX_KEYS 3
 
-typedef struct {
+typedef struct KeyBinding KeyBinding;
+struct KeyBinding {
 	char keys[MAX_KEYS];
 	char *str;
 	int len;
-	struct KeyBinding *next;
-} KeyBinding;
-
-typedef KeyBinding KeyBinding;
+	KeyBinding *next;
+};
 
 KeyBinding *head;
 
