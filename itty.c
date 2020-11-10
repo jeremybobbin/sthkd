@@ -32,6 +32,13 @@ restore()
 }
 
 int
+die(const char *msg)
+{
+	err = msg;
+	exit(1);
+}
+
+int
 winch(int sig)
 {
 	if (ioctl(STDIN_FILENO, TIOCGWINSZ, &winsize) == -1 ||
@@ -42,13 +49,6 @@ int
 stop(int sig)
 {
 	running = 0;
-}
-
-int
-die(const char *msg)
-{
-	err = msg;
-	exit(1);
 }
 
 int
