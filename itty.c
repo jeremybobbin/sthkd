@@ -32,20 +32,20 @@ restore()
 }
 
 int
-die(const char *msg)
+die(char *msg)
 {
 	err = msg;
 	exit(1);
 }
 
-int
+void
 winch(int sig)
 {
 	if (ioctl(STDIN_FILENO, TIOCGWINSZ, &winsize) == -1 ||
 		ioctl(pty, TIOCSWINSZ, &winsize) == -1) die("ioctl");
 }
 
-int
+void
 stop(int sig)
 {
 	running = 0;
