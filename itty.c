@@ -54,8 +54,8 @@ stop(int sig)
 int
 main(int argc, char *argv[])
 {
-	int len; 
-	char buf[BUFSIZ], *prg = NULL, c;
+	int len, c;
+	char buf[BUFSIZ], *prg = NULL;
 	struct sigaction sa;
 
 	while ((c = getopt(argc, argv, "qo:n:")) != -1) {
