@@ -8,6 +8,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "arg.h"
+
 #define MAX_LINE 2048
 #define MAX_KEYS 3
 
@@ -19,6 +21,7 @@ struct KeyBinding {
 	KeyBinding *next;
 };
 
+char *argv0;
 KeyBinding *head;
 
 /* Assuming you had the Binding, "b", where, when you press x, then y.
@@ -39,7 +42,7 @@ keybinding(int keys[], unsigned int keycount) {
 	}
 	return NULL;
 }
-	
+
 int
 die(const char *msg)
 {
@@ -55,6 +58,12 @@ emalloc(int size)
 	if ((p = malloc(size)) == NULL)
 		die("malloc");
 	return p;
+}
+
+void
+usage() {
+	fprintf(stderr, "itty: USAGE\n");
+	exit(1);
 }
 
 /* fmt states */
@@ -115,29 +124,25 @@ main(int argc, char **argv)
 	ofd = nfd = -1;
 	flags = i = 0;
 
-	while ((c = getopt(argc, argv, "qo:n:")) != -1) {
-		switch (c) {
-		case 'q': flags |= QUIET; break;
-		case 'o':
-			if ((ofd = open(optarg, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR) ) == -1)
-				die(optarg);
-			break;
-		case 'n':
-			if ((nfd = open(optarg, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR)) == -1)
-				die(optarg);
-			break;
-		default: die("unrecognized option");
-		}
-	}
+	ARGBEGIN {
+	case 'q': flags |= QUIET; break;
+	case 'o':
+		if ((ofd = open(EARGF(usage()), O_RDWR|O_CREAT, S_IRUSR|S_IWUSR)) == -1)
+			usage();
+		break;
+	case 'n':
+		if ((nfd = open(EARGF(usage()), O_RDWR|O_CREAT, S_IRUSR|S_IWUSR)) == -1)
+			usage();
+		break;
+	default: die("unrecognized option");
+	} ARGEND
 
 	if (ofd == -1) ofd = 1;
 	if (nfd == -1) nfd = 1;
 
-	if (optind == argc) {
+	if (argc < 1) {
 		die("argcount\n");
 	}
-	argc -= optind;
-	argv += optind;
 
 	if (stat(*argv, &st) == -1)
 		die("stat");

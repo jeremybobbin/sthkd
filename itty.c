@@ -10,12 +10,15 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include "arg.h"
+
 #define MAX(a,b) (a) > (b) ? (a) : (b)
 
 /* assumes buf & len are defined */
 #define COPY(dst, src) (((len = read((src), buf, sizeof(buf))) > 0 && \
 	write(dst, buf, len) == len) ? len : -1)
 
+char *argv0;
 struct termios orig, term;
 struct winsize winsize;
 /* ipid, ipipe, opipe: interpreter {pid,{input,output} pipe} */
@@ -60,20 +63,18 @@ usage() {
 int
 main(int argc, char *argv[])
 {
-	int len, c;
-	char buf[BUFSIZ], *prg = NULL;
+	int len, i;
+	char buf[BUFSIZ], *prg = NULL, c;
 	struct sigaction sa;
 
-	while ((c = getopt(argc, argv, "qo:n:")) != -1) {
-		switch (c) {
-		case 'p': prg = optarg;
-			break;
-		default: usage();
-		}
-	}
+	ARGBEGIN {
+	case 'p': prg = EARGF(usage());
+		break;
+	default: usage();
+	} ARGEND
 
-	argc -= optind;
-	argv += optind;
+	argc -= i;
+	argv += i;
 
 	if (argc < 1) {
 		die("set args\n");
