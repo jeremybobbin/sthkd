@@ -51,6 +51,12 @@ stop(int sig)
 	running = 0;
 }
 
+void
+usage() {
+	fprintf(stderr, "usage: itty [ -p program ] [ command [args...]]\n");
+	exit(1);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -62,7 +68,7 @@ main(int argc, char *argv[])
 		switch (c) {
 		case 'p': prg = optarg;
 			break;
-		default: die("unrecognized option");
+		default: usage();
 		}
 	}
 
