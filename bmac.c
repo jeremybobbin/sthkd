@@ -60,6 +60,14 @@ emalloc(int size)
 	return p;
 }
 
+void *
+erealloc(void *p, int size)
+{
+	if ((p = realloc(p, size)) == NULL)
+		die("realloc");
+	return p;
+}
+
 void
 usage() {
 	fprintf(stderr, "itty: USAGE\n");
@@ -158,15 +166,19 @@ main(int argc, char **argv)
 		switch (state) {
 		case BINDING:
 			if (line[0] == '\t') {
-				kb->str = emalloc(kb->len = strlen(line+1));
+				len = strlen(line+1);
+				/* heuristic - see next comment */
+				kb->str = erealloc(kb->str, kb->len + len);
+				/* since '\n', '\t', etc, we can't add len directly.
+				 * fmt will give us the length it wrote to the dst array */
+				kb->len += fmt(kb->str+kb->len, line+1, len);
 				/* remove newline */
-				fmt(kb->str, line+1, kb->len);
-				kb->len = strlen(kb->str);
-				/* kb->str[kb->len] = '\0'; */
+				kb->str[kb->len] = '\0';
 				break;
 			} else state = KEYS; /* FALLTHROUGH */
 		case KEYS:
-			if (line[0] == '\n') continue;
+			if (line[0] == '\n')
+				continue; /* empty line */
 			/* set kb to freshly allocated KeyBinding */
 			if (kb == NULL) {
 				 kb = head = emalloc(sizeof(KeyBinding));
@@ -174,6 +186,8 @@ main(int argc, char **argv)
 				while (kb->next != NULL) kb = kb->next;
 				kb->next = emalloc(sizeof(KeyBinding));
 				kb = kb->next;
+				kb->str = NULL;
+				kb->len = 0;
 			}
 			fmt(kb->keys, line, sizeof(kb->keys));
 			state = BINDING;
