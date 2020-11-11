@@ -19,18 +19,20 @@
 	write(dst, buf, len) == len) ? len : -1)
 
 char *argv0;
-struct termios orig, term;
 struct winsize winsize;
+struct termios orig, term;
 /* ipid, ipipe, opipe: interpreter {pid,{input,output} pipe} */
-int pty, pid, ipid, ipipe[2], opipe[2], nfds, running;
+int pty, pid, ipid, ipipe[2], opipe[2], nfds, running, ttyinited;
 char *err;
 
 void
 restore()
 {
 	/* restore terminal */
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig);
-	fflush(stdout);
+	if (ttyinited) {
+		tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig);
+		fflush(stdout);
+	}
 	if (err) fprintf(stderr, "itty: error(%d) - %s\n", errno, err);
 }
 
@@ -67,6 +69,8 @@ main(int argc, char *argv[])
 	char buf[BUFSIZ], *prg = NULL, c;
 	struct sigaction sa;
 
+	atexit(restore);
+
 	ARGBEGIN {
 	case 'p': prg = EARGF(usage());
 		break;
@@ -87,7 +91,6 @@ main(int argc, char *argv[])
 	if (ioctl(STDIN_FILENO, TIOCGWINSZ, &winsize)) {
 		die("ioctl");
 	}
-
 	snprintf(buf, sizeof(buf), "%d", getpid());
 	setenv("ITTY", buf, 1);
 
@@ -113,7 +116,7 @@ main(int argc, char *argv[])
 
 	fflush(stdout);
 
-	atexit(restore);
+	ttyinited = 1;
 
 	if (pipe(ipipe) == -1 || pipe(opipe) == -1)
 		die("interpreter pipe");
@@ -160,16 +163,16 @@ main(int argc, char *argv[])
 		/* copy stdin to interpreter input */
 		if (FD_ISSET(STDIN_FILENO, &fds))
 			if (COPY(ipipe[1], STDIN_FILENO) == -1)
-				die("copy stdin to interpreter input");
+				running = 0;
 
 		/* copy interpreter output to pty */
 		if (FD_ISSET(opipe[0], &fds))
 			if (COPY(pty, opipe[0]) == -1)
-				die("copy interpreter output to pty");
+				running = 0;
 
 		/* copy pty to stderr */
 		if (FD_ISSET(pty, &fds))
 			if (COPY(STDERR_FILENO, pty) == -1)
-				die("copy pty to stderr");
+				running = 0;
 	}
 }
