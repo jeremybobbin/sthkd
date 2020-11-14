@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ $# -ne 1 ]; then
+if [ $# -lt 1 ]; then
 	echo "${0##*/}: requires an argument" 1>&2
 	exit 1
 fi
@@ -13,9 +13,9 @@ chmod 700 "$tmp/cmd"
 # the end user handle the rest
 cat "$tmp/cmd" & cat=$!
 
-# $1 is our config
+config="$1"; shift
 # we're redirecting non-matching input to stdout
-itty bmac -o "$tmp/cmd" -n /dev/stdout "$1"
+itty "$@" bmac -o "$tmp/cmd" -n /dev/stdout "$config"
 kill "$cat"
 
 rm -rf "$tmp"
